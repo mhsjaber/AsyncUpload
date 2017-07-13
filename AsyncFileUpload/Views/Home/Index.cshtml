@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <br />
+        <br />
+        @using (Ajax.BeginForm("AsyncUpload", "Upload", new AjaxOptions() { HttpMethod = "POST" }, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="file" name="files"/>
+            <br />
+            <input type="submit" value="Submit"/>
+        }
+    </div>
+    <div class="progress">
+        <div class="progress-bar">0%</div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="http://malsup.github.com/jquery.form.js"></script> 
+    <script>
+        (function () {
+            $('form').ajaxForm({
+                beforeSend: function () {
+
+                },
+                uploadProgress: function (event, position, total, percenrtage) {
+                    console.log(percenrtage);
+                },
+                success: function (d) {
+                    console.log(d)
+                },
+                complete: function (xhr) {
+                    conosle.log(xhr)
+                }
+            });
+        });
+    </script>
+    }
