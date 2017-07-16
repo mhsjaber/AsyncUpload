@@ -7,37 +7,101 @@
     <div class="col-md-12">
         <br />
         <br />
-        @using (Ajax.BeginForm("AsyncUpload", "Upload", new AjaxOptions() { HttpMethod = "POST" }, new { enctype = "multipart/form-data" }))
-        {
-            @Html.AntiForgeryToken()
-            <input type="file" name="files"/>
-            <br />
-            <input type="submit" value="Submit"/>
-        }
+        <form action="/Home/index" enctype="multipart/form-data"  method="post">
+            @Html.AntiForgeryToken()           
+            <input type="file" name="files[]" id="file" multiple>
+            <br>
+            <input type="submit" id="submit" value="Submit">
+        </form>
+        
     </div>
-    <div class="progress">
-        <div class="progress-bar">0%</div>
-    </div>
+        <div id="upload_progress">0%</div>
 </div>
 
 @section scripts{
     <script src="http://malsup.github.com/jquery.form.js"></script> 
     <script>
-        (function () {
-            $('form').ajaxForm({
-                beforeSend: function () {
+        $(document).ready(function () {
+            $('#submit').click(function (event) {
+                event.preventDefault();
+                event.stopPropagation();
 
-                },
-                uploadProgress: function (event, position, total, percenrtage) {
-                    console.log(percenrtage);
-                },
-                success: function (d) {
-                    console.log(d)
-                },
-                complete: function (xhr) {
-                    conosle.log(xhr)
+                var file = document.getElementById('file');
+                var data = new FormData();
+                data.append('ajax', 'true');
+
+                for (var i = 0; i < file.files.length; i++) {
+                    data.append('files[]', file.files[i]);
                 }
+
+                var request = new XMLHttpRequest();
+                request.upload.addEventListener('progress', function (event) {
+                    if (event.lengthComputable) {
+                        var percent = event.loaded / event.total;
+                        var progress = document.getElementById('upload_progress');
+
+                        while (progress.hasChildNodes()) {
+                            progress.removeChild(progress.firstChild);
+                        }
+
+                        progress.appendChild(document.createTextNode(Math.ceil(percent * 100) + '%'));
+                    }
+                });
+                request.upload.addEventListener('load', function (event) {
+
+                });
+                request.upload.addEventListener('error', function (event) {
+
+                });
+                console.log(data);
+
+                request.open('post', '/Home/Index');
+                request.setRequestHeader('Cache-Control', 'no-cache');
+                request.send(data);
             });
         });
+
+
+
+
+        //var chunksize = 100000 // 1MB
+        //var chunks = math.ceil(chunksize / fileToUpload.fileSize);
+
+        //function uploadChunk(fileToUpload, chunk = 0) {
+        //    var xhr = new XMLHttpRequest();
+        //    var uploadStatus = xhr.upload;
+
+        //    uploadStatus.addEventListener("progress", function (ev) {
+        //        if (ev.lengthComputable) {
+        //            $("#uploadPercentage").html((ev.loaded / ev.total) * 100 + "%");
+        //        }
+        //    }, false);
+
+        //    uploadStatus.addEventListener("error", function (ev) { $("#error").html(ev) }, false);
+        //    uploadStatus.addEventListener("load", function (ev) { $("#error").html("APPOSTO!") }, false);
+
+        //    var start = chunksize * chunk;
+        //    var end = start + (chunksize - 1)
+        //    if (end >= fileToUpload.fileSize) {
+        //        end = fileToUpload.fileSize - 1;
+        //    }
+
+        //    xhr.open(
+        //        "POST",
+        //        "/Home/AsyncUpload",
+        //        true
+        //    );
+        //    xhr.setRequestHeader("Cache-Control", "no-cache");
+        //    xhr.setRequestHeader("Content-Type", "multipart/form-data");
+        //    xhr.setRequestHeader("X-File-Name", fileToUpload.fileName);
+        //    xhr.setRequestHeader("X-File-Size", fileToUpload.fileSize);
+        //    xhr.setRequestHeader("X-File-Type", fileToUpload.type);
+        //    xhr.setRequestHeader("Content-Range", start + "-" + end + "/" + fileToUpload.fileSize);
+        //    xhr.send(fileToUpload);
+        //}
+
+        //for (c = 0; c < chunks; c++) {
+        //    uploadChunk(fileToUpload, c);
+        //}
     </script>
     }
